@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import type { useAuthStore } from '@/stores/authStore'
 import type { LehrerEintrag } from '@/types/admin'
@@ -19,6 +19,7 @@ type KonfigDeps = {
   smtpTls: Ref<boolean>
   kannAnSVWSServerSenden: ComputedRef<boolean>
   authStore: AuthStore
+  onGespeichert?: () => void
 }
 
 function baueKonfigDaten(deps: KonfigDeps) {
@@ -72,6 +73,7 @@ export function useKonfiguration(deps: KonfigDeps) {
   const speichernKennwortBestaetigung = ref<string>('')
   const speichernFehler = ref<string>('')
   const speichernLaeuft = ref<boolean>(false)
+  const kennwoerterUngleich = computed<boolean>(() => speichernKennwort.value !== speichernKennwortBestaetigung.value)
 
   const ladenModalOffen = ref<boolean>(false)
   const ladenKennwort = ref<string>('')
@@ -112,6 +114,8 @@ export function useKonfiguration(deps: KonfigDeps) {
       a.href = url; a.download = 'gradehub-config.ghb'; a.click()
       URL.revokeObjectURL(url)
       speichernModalOffen.value = false
+      konfigKennwort.value = speichernKennwort.value
+      deps.onGespeichert?.()
     } catch (error) {
       speichernFehler.value = error instanceof Error ? error.message : 'Speichern fehlgeschlagen.'
     } finally {
@@ -154,6 +158,8 @@ export function useKonfiguration(deps: KonfigDeps) {
       await speichereKonfigurationAufServer(encrypted)
       serverKonfigVorhanden.value = true
       speichernModalOffen.value = false
+      konfigKennwort.value = speichernKennwort.value
+      deps.onGespeichert?.()
     } catch (error) {
       speichernFehler.value = error instanceof Error ? error.message : 'Speichern fehlgeschlagen.'
     } finally {
@@ -275,6 +281,7 @@ export function useKonfiguration(deps: KonfigDeps) {
     speichernKennwort,
     speichernKennwortBestaetigung,
     speichernFehler,
+    kennwoerterUngleich,
     speichernLaeuft,
     ladenModalOffen,
     ladenKennwort,

@@ -32,10 +32,13 @@ const {
   schluesselGeneriert,
   schluesselGenerierenLaeuft,
   schluesselFehler,
+  schluesselNachfrageOffen,
   oeffentlicherSchluesselPem,
   privaterSchluesselPem,
   generiereSchluessel,
   schliesseSchluesselModal,
+  schliesseSchluesselModalOhneSpeichern,
+  markiereSchluesselGesichert,
   fuehreSchluesselGenerierungDurch,
 } = useSchluessel()
 
@@ -85,6 +88,11 @@ function erzeugeeDateien(): void {
   erzeugeModalOffen.value = true
 }
 
+function speichernNachSchluessel(): void {
+  schliesseSchluesselModalOhneSpeichern()
+  speichern()
+}
+
 function erzeugeVerschluesselt(): void {
   erzeugeModalOffen.value = false
   void _erzeugeDateienFuerAuswahl(oeffentlicherSchluesselPem.value)
@@ -101,6 +109,7 @@ const {
   speichernKennwort,
   speichernKennwortBestaetigung,
   speichernFehler,
+  kennwoerterUngleich,
   speichernLaeuft,
   ladenModalOffen,
   ladenKennwort,
@@ -132,6 +141,7 @@ const {
   smtpTls,
   kannAnSVWSServerSenden,
   authStore,
+  onGespeichert: markiereSchluesselGesichert,
 })
 
 const {
@@ -736,6 +746,54 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- Nachfrage: Schlüssel nicht gesichert -->
+    <div
+      v-if="schluesselNachfrageOffen"
+      class="modal-backdrop"
+    >
+      <div
+        class="modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="schluessel-nachfrage-title"
+      >
+        <div class="modal-header">
+          <h2 id="schluessel-nachfrage-title">
+            Konfiguration speichern?
+          </h2>
+        </div>
+        <div class="modal-body">
+          <p class="error">
+            Das Schlüsselpaar und die Notenpasswörter sind noch nicht gespeichert.
+            Gehen sie verloren, können bereits verschlüsselte Dateien nicht mehr entschlüsselt werden.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn-generate"
+            type="button"
+            @click="schluesselNachfrageOffen = false"
+          >
+            Zurück
+          </button>
+          <button
+            class="btn-generate"
+            type="button"
+            @click="schliesseSchluesselModalOhneSpeichern"
+          >
+            Ohne Speichern schließen
+          </button>
+          <button
+            class="btn-generate btn-generate--aktiv"
+            type="button"
+            @click="speichernNachSchluessel"
+          >
+            Jetzt speichern
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Speichern-Modal -->
     <div
       v-if="speichernModalOffen"
@@ -782,7 +840,7 @@ onUnmounted(() => {
             type="password"
             autocomplete="new-password"
             placeholder="Mindestens 8 Zeichen"
-            @keydown.enter="speichernLaeuft || (kannAnSVWSServerSenden ? fuehreServerSpeichernDurch() : fuehreSpeichernDurch())"
+            @keydown.enter="speichernLaeuft || kennwoerterUngleich || (kannAnSVWSServerSenden ? fuehreServerSpeichernDurch() : fuehreSpeichernDurch())"
           >
           <label
             class="modal-form-label"
@@ -795,8 +853,14 @@ onUnmounted(() => {
             type="password"
             autocomplete="new-password"
             placeholder="Kennwort wiederholen"
-            @keydown.enter="speichernLaeuft || (kannAnSVWSServerSenden ? fuehreServerSpeichernDurch() : fuehreSpeichernDurch())"
+            @keydown.enter="speichernLaeuft || kennwoerterUngleich || (kannAnSVWSServerSenden ? fuehreServerSpeichernDurch() : fuehreSpeichernDurch())"
           >
+          <p
+            v-if="kennwoerterUngleich"
+            class="error"
+          >
+            Die Kennwörter stimmen nicht überein.
+          </p>
         </div>
         <div class="modal-footer">
           <button
@@ -809,7 +873,7 @@ onUnmounted(() => {
           <button
             class="btn-generate"
             type="button"
-            :disabled="speichernLaeuft"
+            :disabled="speichernLaeuft || kennwoerterUngleich"
             @click="fuehreSpeichernDurch"
           >
             {{ speichernLaeuft ? 'Wird gespeichert…' : 'Als Datei herunterladen' }}
@@ -818,7 +882,7 @@ onUnmounted(() => {
             v-if="kannAnSVWSServerSenden"
             class="btn-generate btn-generate--aktiv"
             type="button"
-            :disabled="speichernLaeuft"
+            :disabled="speichernLaeuft || kennwoerterUngleich"
             @click="fuehreServerSpeichernDurch"
           >
             {{ speichernLaeuft ? 'Wird gespeichert…' : 'Auf Server speichern' }}

@@ -5,6 +5,9 @@ export function useSchluessel() {
   const schluesselGeneriert = ref<boolean>(false)
   const schluesselGenerierenLaeuft = ref<boolean>(false)
   const schluesselFehler = ref<string>('')
+  // true, sobald ein Schlüsselpaar erzeugt wurde, das noch in keiner gespeicherten Konfiguration steckt
+  const schluesselUngesichert = ref<boolean>(false)
+  const schluesselNachfrageOffen = ref<boolean>(false)
   const oeffentlicherSchluesselPem = ref<string>('')
   const privaterSchluesselPem = ref<string>('')
   const privaterSchluessel = ref<CryptoKey | null>(null)
@@ -16,7 +19,20 @@ export function useSchluessel() {
   }
 
   function schliesseSchluesselModal(): void {
+    if (schluesselUngesichert.value) {
+      schluesselNachfrageOffen.value = true
+      return
+    }
     schluesselModalOffen.value = false
+  }
+
+  function schliesseSchluesselModalOhneSpeichern(): void {
+    schluesselNachfrageOffen.value = false
+    schluesselModalOffen.value = false
+  }
+
+  function markiereSchluesselGesichert(): void {
+    schluesselUngesichert.value = false
   }
 
   async function fuehreSchluesselGenerierungDurch(): Promise<void> {
@@ -47,6 +63,7 @@ export function useSchluessel() {
       privaterSchluesselPem.value = `-----BEGIN PRIVATE KEY-----\n${privLines}\n-----END PRIVATE KEY-----`
 
       schluesselGeneriert.value = true
+      schluesselUngesichert.value = true
     } catch (error) {
       schluesselFehler.value = error instanceof Error ? error.message : 'Schlüsselerzeugung fehlgeschlagen.'
     } finally {
@@ -59,12 +76,16 @@ export function useSchluessel() {
     schluesselGeneriert,
     schluesselGenerierenLaeuft,
     schluesselFehler,
+    schluesselUngesichert,
+    schluesselNachfrageOffen,
     oeffentlicherSchluesselPem,
     privaterSchluesselPem,
     privaterSchluessel,
     oeffentlicherSchluessel,
     generiereSchluessel,
     schliesseSchluesselModal,
+    schliesseSchluesselModalOhneSpeichern,
+    markiereSchluesselGesichert,
     fuehreSchluesselGenerierungDurch,
   }
 }
