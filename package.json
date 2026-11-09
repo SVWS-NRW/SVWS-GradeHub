@@ -15,6 +15,8 @@
     "electron:dev": "npm run build && node scripts/write-electron-config.mjs && GSETTINGS_SCHEMA_DIR=$HOME/.local/share/electron-schemas electron . --no-sandbox --ozone-platform=x11",
     "electron:build": "npm run build && node scripts/write-electron-config.mjs && electron-builder",
     "release": "node scripts/release.mjs",
+    "release:build": "node scripts/release-build.mjs",
+    "release:github": "gh release create v$npm_package_version --draft --title \"Release $npm_package_version\" --notes \"\" release/gradehub-$npm_package_version-webserver.zip release/gradehub-$npm_package_version-node-server.zip release/SVWS-GradeHub-$npm_package_version.AppImage release/SVWS-GradeHub-Setup-$npm_package_version.exe",
     "dev:offline": "vite --config vite.offline.config.ts",
     "build": "vue-tsc --noEmit && vite build --config vite.offline.config.ts",
     "build:web": "vue-tsc --noEmit && vite build",

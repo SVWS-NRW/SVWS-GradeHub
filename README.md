@@ -120,21 +120,33 @@ Vite läuft auf Port 5173, das Backend auf Port 3000. `/api`-Anfragen werden aut
 | `npm run preview` | Build-Vorschau |
 | `npm run electron:dev` | Electron-App lokal starten (Linux, erfordert vorherigen Build) |
 | `npm run electron:build` | Electron-Installer für die aktuelle Plattform bauen |
-| `npm run release` | Alle Release-Artefakte in einem Schritt erzeugen (siehe unten) |
+| `npm run release [minor\|major]` | Version erhöhen, bauen, pushen, GitHub-Entwurf anlegen (siehe unten) |
+| `npm run release:build` | Nur die Release-Artefakte nach `release/` bauen |
 
 ---
 
 ## Release
 
 ```bash
-npm run release
+npm run release          # patch: 1.0.1 → 1.0.2
+npm run release minor    # minor: 1.0.1 → 1.1.0
+npm run release major    # major: 1.0.1 → 2.0.0
 ```
 
-Das Skript `scripts/release.mjs` erzeugt alle Artefakte in einem Schritt:
+Voraussetzungen: Arbeitsverzeichnis sauber (alles committet), Branch mit Upstream auf GitHub, `gh` angemeldet.
+
+Das Skript `scripts/release.mjs` führt aus:
+
+1. Version erhöhen (`npm version` → Commit + Tag `v{version}`, lokal)
+2. Artefakte bauen (`npm run release:build`, siehe unten). Schlägt der Build fehl, wird die Versionserhöhung lokal zurückgenommen.
+3. Commit und Tag pushen (`git push --follow-tags`)
+4. GitHub-Release als **Entwurf** anlegen (`npm run release:github`). Release-Notes dort eintragen und veröffentlichen.
+
+`npm run release:build` (`scripts/release-build.mjs`) baut die Artefakte einzeln:
 
 1. `release/`-Verzeichnis bereinigen
 2. Offline-Build erstellen (`npm run build`)
-3. Webserver-ZIP packen (mit deaktiviertem Admin-Modus in `config.js`)
+3. Webserver- und Node-Server-ZIP packen (mit deaktiviertem Admin-Modus in `config.js`)
 4. `dist/config.js` auf Electron-Stand setzen (`admintoolVisible: true`)
 5. Electron-Installer für Linux und Windows bauen (`electron-builder`)
 6. `dist/config.js` zurücksetzen
@@ -144,7 +156,8 @@ Erzeugte Artefakte im Ordner `release/`:
 | Datei | Beschreibung |
 |---|---|
 | `gradehub-{version}-webserver.zip` | Webserver-Bundle (dist + server.js + package.json) |
-| `gradehub-{version}.AppImage` | Linux Desktop-App (ausführbar, kein Setup nötig) |
+| `gradehub-{version}-node-server.zip` | Node.js-Server mit E-Mail-Funktion |
+| `SVWS-GradeHub-{version}.AppImage` | Linux Desktop-App (ausführbar, kein Setup nötig) |
 | `SVWS-GradeHub-Setup-{version}.exe` | Windows-Installer (NSIS) |
 
 > `npm run electron:build` baut nur den Installer für die **aktuelle Plattform**. Für Cross-Plattform-Builds (z. B. Windows-EXE auf Linux) wird `wine` benötigt oder ein CI-System empfohlen.
