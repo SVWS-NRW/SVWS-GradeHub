@@ -7,6 +7,20 @@
  */
 
 // ---------------------------------------------------------------------------
+// Funktion der Lehrkraft (SVWS: /db/{schema}/enm/v2/lehrer/{id}/{funktion})
+// ---------------------------------------------------------------------------
+
+export const ENM_FUNKTION = {
+  FACHLEHRER: 1,
+  KLASSENLEITUNG: 2,
+  ABTEILUNGSLEITUNG: 3,
+  SCHULLEITUNG: 4,
+  NOTENMODULADMIN: 5,
+} as const
+
+export type EnmFunktion = (typeof ENM_FUNKTION)[keyof typeof ENM_FUNKTION]
+
+// ---------------------------------------------------------------------------
 // Primitive Typen
 // ---------------------------------------------------------------------------
 

@@ -2,7 +2,8 @@ import { readonly, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { decompressSync, strFromU8 } from 'fflate'
 
-import type { EnmExport as ENMDaten } from '@/types/enm'
+import { ENM_FUNKTION } from '@/types/enm'
+import type { EnmExport as ENMDaten, EnmFunktion } from '@/types/enm'
 
 const ENM_DOWNLOAD_TIMEOUT_MS = 30_000
 const GZIP_MAGIC_BYTE_1 = 0x1f
@@ -144,11 +145,11 @@ export const useENMStore = defineStore('enm', () => {
       .sort((a, b) => a.kuerzel.localeCompare(b.kuerzel, 'de'))
   }
 
-  async function ladeENMVonServer(baseUrl: string, schema: string, username: string, password: string, lehrerId?: number): Promise<void> {
+  async function ladeENMVonServer(baseUrl: string, schema: string, username: string, password: string, lehrerId?: number, funktion: EnmFunktion = ENM_FUNKTION.FACHLEHRER): Promise<void> {
     const cleanedBaseUrl = baseUrl.replace(/\/$/, '')
     const endpoints = lehrerId
       ? [
-          `${cleanedBaseUrl}/db/${schema}/enm/v2/lehrer/${lehrerId}`,
+          `${cleanedBaseUrl}/db/${schema}/enm/v2/lehrer/${lehrerId}/${funktion}`,
           `${cleanedBaseUrl}/db/${schema}/enm/v1/lehrer/${lehrerId}`,
         ]
       : [

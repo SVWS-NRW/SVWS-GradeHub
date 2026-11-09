@@ -204,7 +204,7 @@ Die SMTP-Konfiguration wird verschlüsselt in der `.ghb`-Datei gespeichert.
 |---|---|---|
 | GET | `/db/{schema}/lehrer` | Lehrerliste laden |
 | GET | `/db/{schema}/lehrer/{id}/stammdaten` | Dienstliche E-Mail-Adresse |
-| GET | `/db/{schema}/enm/v2/lehrer/{id}` | ENM-Daten einer Lehrkraft |
+| GET | `/db/{schema}/enm/v2/lehrer/{id}/{funktion}` | ENM-Daten einer Lehrkraft; `funktion`: 1 Fachlehrer (Standard), 2 Klassenleitung, 3 Abteilungsleitung, 4 Schulleitung, 5 Notenmoduladmin |
 | POST | `/db/{schema}/enm/v2/import` | Noten zurückschreiben |
 
 Authentifizierung: Basic Auth (`Authorization: Basic <base64(user:pass)>`).

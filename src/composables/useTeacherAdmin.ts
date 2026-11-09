@@ -3,6 +3,8 @@ import { jsPDF } from 'jspdf'
 import { strToU8, zipSync } from 'fflate'
 import type { useAuthStore } from '@/stores/authStore'
 import type { LehrerEintrag, SpaltenKey } from '@/types/admin'
+import { ENM_FUNKTION } from '@/types/enm'
+import type { EnmFunktion } from '@/types/enm'
 import {
   encodeBasicAuth,
   aesVerschluesselnBytes,
@@ -246,9 +248,9 @@ export function useTeacherAdmin(authStore: AuthStore) {
     doc.save(`notenpasswoerter-${stempel}.pdf`)
   }
 
-  async function ladeENMJsonFuerLehrer(lehrerId: number): Promise<string> {
+  async function ladeENMJsonFuerLehrer(lehrerId: number, funktion: EnmFunktion = ENM_FUNKTION.FACHLEHRER): Promise<string> {
     const cleanedBaseUrl = authStore.baseUrl.replace(/\/$/, '')
-    const endpoint = `${cleanedBaseUrl}/db/${authStore.schema}/enm/v2/lehrer/${lehrerId}`
+    const endpoint = `${cleanedBaseUrl}/db/${authStore.schema}/enm/v2/lehrer/${lehrerId}/${funktion}`
     let response: Response
     try {
       response = await fetch(endpoint, {
